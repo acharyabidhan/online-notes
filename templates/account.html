@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Save Notes -Account</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="icon" href="data:image;charset=utf-8;base64,{{ favicon }}">
+</head>
+
+<body>
+    <style>
+        body {
+            background-color: #260030;
+            padding: 1%;
+            text-align: center;
+        }
+
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        #nav_bar {
+            background-color: #400052;
+            height: 6vh;
+            display: flex;
+            justify-content: space-between;
+            padding: 1%;
+        }
+
+        #refresh_btn {
+            width: 12vh;
+            margin-right: 1%;
+        }
+
+        #logout_btn {
+            width: 12vh;
+            margin-right: 1%;
+        }
+
+        #note {
+            font-size: x-large;
+            margin-top: 1%;
+            resize: none;
+            width: 98%;
+            height: 20vh;
+            padding: 0.8%;
+        }
+
+        #ctrl_btns {
+            margin-top: 1%;
+            display: flex;
+            justify-content: space-evenly;
+        }
+
+        .save_btn {
+            width: 30%;
+            font-size: large;
+        }
+
+        #all_notes {
+            margin-top: 1%;
+            height: 80vh;
+            overflow-y: scroll;
+            scroll-behavior: smooth;
+            padding-right: 1%;
+        }
+
+        #all_notes::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        #all_notes::-webkit-scrollbar-track {
+            background-color: rgb(255, 255, 255);
+            border-radius: 20px;
+        }
+
+        #all_notes::-webkit-scrollbar-thumb {
+            background: #400052;
+            border-radius: 20px;
+        }
+
+        #new_elem {
+            background-color: #400052;
+            padding: 1%;
+            margin-top: 2%;
+        }
+
+        .title_div {
+            display: flex;
+            justify-content: space-between;
+            padding-right: 2%;
+            padding-left: 2%;
+        }
+
+        .n_title {
+            font-size: large;
+            color: aliceblue;
+        }
+
+        .body_div {
+            padding: 2%;
+            text-align: left;
+            font-size: large;
+            color: aliceblue;
+        }
+
+        .d_btn {
+            border-width: 0;
+            font-size: large;
+            color: red;
+        }
+
+        .e_btn {
+            border-width: 0;
+            font-size: large;
+        }
+    </style>
+    <div id="nav_bar">
+        <p class="n_title" id="username_p"></p>
+        <div>
+            <button onclick="reload_page()" id="refresh_btn">Refresh</button>
+            <button style="color: red;" onclick="logout()" id="logout_btn">Logout</button>
+        </div>
+    </div>
+    <textarea id="note" maxlength="1000">Enter your notes here 🙂</textarea>
+    <center>
+        <div id="ctrl_btns">
+            <button class="save_btn" onclick="send_notes('private')">Save (For you only)</button>
+            <button class="save_btn" onclick="clear_f()">Clear</button>
+            <button class="save_btn" onclick="send_notes('public')">Save (For Everyone)</button>
+        </div>
+    </center>
+
+    <div id="all_notes"></div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script>
+        function reload_page() { window.location.reload(); }
+        function logout() { localStorage.clear(); window.location.replace("login"); }
+
+        const written_notes = document.getElementById("note");
+        const all_notes = document.getElementById("all_note");
+
+        var count = 1
+        var pp = "private";
+
+        String.prototype.format = function () {
+            var i = 0, args = arguments;
+            return this.replace(/{}/g, function () {
+                return typeof args[i] != "undefined" ? args[i++] : "";
+            });
+        };
+
+        new_elem_html = '<div id="new_elem"> <div class="title_div"> <p class="n_title" id="{}">{}</p> <p class="n_title" id="{}">{}</p> <div> <button class="d_btn" onclick="delete_note()" id="{}">Delete</button> <button class="e_btn" onclick="edit_note()" id="{}">Edit</button> </div> </div> <div class="body_div">{}</div> </div>'
+
+        String.prototype.toDOM = function () {
+            var d = document, i, a = d.createElement("div"), b = d.createDocumentFragment();
+            a.innerHTML = this;
+            while (i = a.firstChild) b.appendChild(i);
+            return b;
+        }
+
+        function format_date() {
+            var c_date = Date();
+            c_date_s = c_date.split(" ");
+            f_c_date = c_date_s.slice(0, 5);
+            a_f_c_date = f_c_date.join("-");
+            s_a_f_c_date = a_f_c_date.split(":");
+            l_a_f_c_date = s_a_f_c_date.join("-");
+            return l_a_f_c_date;
+        }
+
+        const all_notes_elem = document.getElementById("all_notes")
+
+        function add_new_element() {
+            anew_elem_html = new_elem_html.format(`${count}${count}`, format_date(), `${count}${count}${count}`, `Note is ${pp}`, `${count}`, `${count}`, written_notes.value);
+            all_notes_elem.prepend(anew_elem_html.toDOM());
+            count += 1
+        }
+
+        function modify_note(k2del, porp, wht) {
+            var m_note = new FormData();
+            m_note.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+            m_note.append("what", wht)
+            m_note.append("porp", porp);
+            m_note.append("key2del", k2del);
+            m_note.append("username", new_acc_data.uname);
+            m_note.append("password", new_acc_data.passw);
+            $.ajax({
+                method: "POST",
+                url: "deletenotes",
+                processData: false,
+                contentType: false,
+                dataType: "json",
+                mimeType: "multipart/form-data",
+                data: m_note,
+                success: function (data) {
+                    console.log(data.status);
+                }
+            });
+        }
+
+        function delete_note() {
+            var to_delete = event.srcElement.id;
+            var p_or_p = document.getElementById(`${to_delete}${to_delete}${to_delete}`);
+            var key2del = document.getElementById(`${to_delete}${to_delete}`);
+            key2del.parentElement.parentElement.parentElement.removeChild(key2del.parentElement.parentElement);
+            modify_note(key2del.innerText, p_or_p.innerText, "delete");
+        }
+
+        function edit_note() {
+            var key2edit = event.srcElement.id
+            var text2edit = document.getElementById(`${key2edit}${key2edit}${key2edit}`).parentElement.parentElement.children[1]
+            written_notes.value = text2edit.innerText;
+        }
+
+        function clear_f() { written_notes.value = ""; }
+
+        function send_notes(p) {
+            if (written_notes.value != "") {
+                pp = p;
+                add_new_element()
+                var notes_d = new FormData();
+                notes_d.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+                notes_d.append("for", p);
+                notes_d.append("note", written_notes.value);
+                notes_d.append("date", Date());
+                notes_d.append("to", acc_data);
+                $.ajax({
+                    method: "POST",
+                    url: "savenotes",
+                    processData: false,
+                    contentType: false,
+                    dataType: "json",
+                    mimeType: "multipart/form-data",
+                    data: notes_d,
+                    success: function (data) {
+                        clear_f();
+                        console.log(data.status);
+                    }
+                });
+            } else {
+                console.log("Cannot save empty note!")
+            }
+        }
+
+        window.onload = function () {
+            acc_data = localStorage.getItem("notes_app_login_data");
+            if (acc_data != null) {
+                try {
+                    new_acc_data = JSON.parse(acc_data);
+                    document.getElementById("username_p").innerText = `Username: ${new_acc_data.uname}`;
+                    var new_acc_data_form = new FormData();
+                    new_acc_data_form.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+                    new_acc_data_form.append("username", new_acc_data.uname);
+                    new_acc_data_form.append("password", new_acc_data.passw);
+                    $.ajax({
+                        method: "POST",
+                        url: "checkLogin",
+                        processData: false,
+                        contentType: false,
+                        dataType: "json",
+                        mimeType: "multipart/form-data",
+                        data: new_acc_data_form,
+                        success: function (data) {
+                            console.log(data.status);
+                            // console.log(data.allnotes);
+                            all_notes_elem.innerHTML = data.allnotes;
+                        }
+                    });
+                } catch {
+                    window.location.replace("login");
+                }
+            } else {
+                window.location.replace("login");
+            }
+        }
+    </script>
+</body>
+
+</html>

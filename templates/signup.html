@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="csrf_token" content="{{ csrf_token }}">
+    <meta charset="UTF-8">
+    <title>Save Notes -Signup</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="icon" href="data:image;charset=utf-8;base64,{{ favicon }}">
+    <style>
+        body{
+            background-color: #260030;
+            padding: 1%;
+        }
+        body::-webkit-scrollbar{
+            display: none;
+        }
+        #nav_bar{
+            background-color: #400052;
+            height: 6vh;
+            display: flex;
+            justify-content: left;
+            padding: 1%;
+        }
+        #home_btn{
+            width: 12vh;
+            margin-right: 1%;
+        }
+        #login_btn{
+            width: 12vh;
+            margin-right: 1%;
+        }
+        #signup_card{
+            text-align: center;
+            margin-top: 2%;
+            padding: 5%;
+            background-color: #400052;
+            max-width: 60vh;
+        }
+        #username{
+            width: 50vh;
+            font-size: large;
+        }
+        #password{
+            margin-top: 5%;
+            width: 50vh;
+            font-size: large;
+        }
+        #cpassword{
+            margin-top: 5%;
+            margin-bottom: 5%;
+            width: 50vh;
+            font-size: large;
+        }
+        #faq{
+            font-size: large;
+            color: white;
+        }
+        #question1{
+            margin-top: 5%;
+            width: 50vh;
+            font-size: large;
+        }
+        #answer1{
+            margin-top: 5%;
+            width: 50vh;
+            font-size: large;
+        }
+        #question2{
+            margin-top: 5%;
+            width: 50vh;
+            font-size: large;
+        }
+        #answer2{
+            margin-top: 5%;
+            width: 50vh;
+            font-size: large;
+        }
+        #signup_btn{
+            margin-top: 5%;
+            width: 30vh;
+            font-size: large;
+        }
+        .loader{
+            border: 5px solid #000000;
+            border-top: 5px solid #15ff00;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            animation: spin 1s linear infinite;
+            margin-left: 47%;
+            margin-top: 20%;
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .loadingscreen {
+            background-color: #000000;
+            position: fixed;
+            opacity: 0.5;
+            bottom: 0%;
+            right: 0%;
+            height: 100%;
+            width: 100%;
+            display: none;
+        }
+        #req_card{
+            text-align: center;
+            margin-top: 2%;
+            padding: 5%;
+            background-color: #400052;
+            max-width: 60vh;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div id="nav_bar">
+        <button onclick="goto_login_page()" id="login_btn">Login</button>
+        <button onclick="goto_home_page()" id="home_btn">Home</button>
+    </div>
+    <center>
+        <div id="signup_card">
+            <input id="username" type="text" placeholder="New username"><br>
+            <input id="password" type="password" placeholder="New password"><br>
+            <input id="cpassword" type="password" placeholder="Confirm new password"><br>
+            <a id="faq" href="https://www.okta.com/blog/2021/03/security-questions/">Why Question/Answer?</a><br>
+            <input id="question1" type="text" placeholder="Your Question 1"><br>
+            <input id="answer1" type="text" placeholder="Your Answer 1"><br>
+            <input id="question2" type="text" placeholder="Your Question 2"><br>
+            <input id="answer2" type="text" placeholder="Your Answer 2"><br>
+            <input id="signup_btn" type="button" value="Signup" onclick="signup()">
+        </div>
+    </center>
+    <center>
+        <div id="req_card">
+            <p style="color: yellow;">Requirements for Signup:</p>
+            <p style="color: yellow;">1. Password must be more than 6 characters!</p>
+            <p style="color: yellow;">2. All the question/answer fields should be filled!</p>
+        </div>
+    </center>
+    <div id="loadingscreen" class="loadingscreen">
+    <div class="loader"></div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script>
+        function goto_home_page(){window.location.href = "/";}
+        function goto_login_page(){window.location.href = "login";}
+        const username = document.getElementById("username");
+        const password = document.getElementById("password");
+        const cpassword = document.getElementById("cpassword");
+        const question1 = document.getElementById("question1");
+        const answer1 = document.getElementById("answer1");
+        const question2 = document.getElementById("question2");
+        const answer2 = document.getElementById("answer2");
+        function signup(){
+            if(
+                username.value != "" &&
+                password.value != "" &&
+                cpassword.value != "" &&
+                question1.value != "" &&
+                answer1.value != "" &&
+                question2.value != "" &&
+                answer2.value != "" 
+            ){
+                if(password.value.length >= 6){
+                    if(password.value == cpassword.value){
+                        show_loading();
+                        var signup_form = new FormData();
+                        signup_form.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+                        signup_form.append("username", username.value);
+                        signup_form.append("password", password.value);
+                        signup_form.append("cpassword", cpassword.value);
+                        signup_form.append("question1", question1.value);
+                        signup_form.append("answer1", answer1.value);
+                        signup_form.append("question2", question2.value);
+                        signup_form.append("answer2", answer2.value);
+                        $.ajax({
+                            method: "POST",
+                            url: "checksignup",
+                            processData: false,
+                            contentType: false,
+                            dataType: "json",
+                            mimeType: "multipart/form-data",
+                            data: signup_form,
+                            success: function (data) {
+                                hide_loading();
+                                if(data.status == "signup_success"){
+                                    window.location.href = "login";
+                                }
+                                console.log(data.status);
+                            }
+                        });
+                    }else{
+                        console.log("Password didnot matched!");
+                    }
+                }else{
+                    console.log("Password must be greater than 6 characters!");
+                }
+            }else{
+                console.log("All fields are required!");
+            }
+        }
+        function show_loading() {
+            document.getElementById("loadingscreen").style.display = "block";
+            document.body.style.overflow = "hidden";}
+        function hide_loading() {
+            document.getElementById("loadingscreen").style.display = "none";
+            document.body.style.overflow = "";}
+    </script>
+</body>
+</html>

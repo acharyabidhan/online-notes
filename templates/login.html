@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf_token" content="{{ csrf_token }}">
+    <title>Save Notes -Signup</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="icon" href="data:image;charset=utf-8;base64,{{ favicon }}">
+    <style>
+        body{
+            background-color: #260030;
+            padding: 1%;;
+        }
+        body::-webkit-scrollbar{
+            display: none;
+        }
+        #nav_bar{
+            background-color: #400052;
+            height: 6vh;
+            display: flex;
+            justify-content: left;
+            padding: 1%;
+        }
+        #home_btn{
+            width: 12vh;
+            margin-right: 1%;
+        }
+        #signup_btn{
+            width: 12vh;
+            margin-right: 1%;
+        }
+        #login_card{
+            text-align: center;
+            margin-top: 2%;
+            padding: 5%;
+            background-color: #400052;
+            max-width: 60vh;
+        }
+        #username{
+            width: 50vh;
+            font-size: large;
+        }
+        #password{
+            width: 50vh;
+            font-size: large;
+            margin-top: 5%;
+            margin-bottom: 5%;
+        }
+        #rp:hover{
+            color: rgb(0, 255, 17);
+        }
+        #rp{
+            font-size: large;
+            color: white;
+            cursor: pointer;
+        }
+        #login_btn{
+            margin-top: 5%;
+            width: 30vh;
+            font-size: large;
+        }
+        .loader{
+            border: 5px solid #000000;
+            border-top: 5px solid #15ff00;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            animation: spin 1s linear infinite;
+            margin-left: 47%;
+            margin-top: 20%;
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .loadingscreen {
+            background-color: #000000;
+            position: fixed;
+            opacity: 0.5;
+            bottom: 0%;
+            right: 0%;
+            height: 100%;
+            width: 100%;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="nav_bar">
+        <button onclick="goto_home_page()" id="home_btn">Home</button>
+        <button onclick="goto_signup_page()" id="signup_btn">Signup</button>
+    </div>
+    <center>
+        <div id="login_card">
+            <input id="username" type="text" placeholder="Username"><br>
+            <input id="password" type="password" placeholder="Password"><br>
+            <a id="rp" onclick="reset_password()">Reset password</a><br>
+            <input id="login_btn" type="button" value="Login" onclick="login()">
+        </div>
+    </center>
+    <div id="loadingscreen" class="loadingscreen">
+    <div class="loader"></div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script>
+        function goto_home_page(){window.location.href = "/";}
+        function goto_signup_page(){window.location.href = "signup";}
+
+        const username = document.getElementById("username");
+        const password = document.getElementById("password");
+
+        function reset_password(){
+            if(username.value != ""){
+                window.location.href = `resetpassword/${username.value}`
+            }
+        }
+
+        function login(){
+            if(username.value != "" && password.value != ""){
+                show_loading();
+                var login_form = new FormData();
+                login_form.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+                login_form.append("username", username.value);
+                login_form.append("password", password.value);
+                $.ajax({
+                    method: "POST",
+                    url: "checkLogin",
+                    processData: false,
+                    contentType: false,
+                    dataType: "json",
+                    mimeType: "multipart/form-data",
+                    data: login_form,
+                    success: function (data) {
+                        hide_loading();
+                        if(data.status == "login_success"){
+                            save_login_data(data);
+                            window.location.href = "account";
+                        }
+                        console.log(data)
+                    }
+                });
+            }
+        }
+        function save_login_data(data){
+            localStorage.setItem("notes_app_login_data", JSON.stringify(data));
+        }
+        function show_loading() {
+            document.getElementById("loadingscreen").style.display = "block";
+            document.body.style.overflow = "hidden";}
+        function hide_loading() {
+            document.getElementById("loadingscreen").style.display = "none";
+            document.body.style.overflow = "";}
+    </script>
+</body>
+</html>

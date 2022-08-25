@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Save Notes -Home Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="icon" href="data:image;charset=utf-8;base64,{{ favicon }}">
+    <style>
+        body{
+            background-color: #260030;
+            padding: 1%;
+        }
+        body::-webkit-scrollbar{
+            display: none;
+        }
+        #nav_bar{
+            background-color: #400052;
+            height: 6vh;
+            display: flex;
+            justify-content: left;
+            padding: 1%;
+        }
+        #login_btn{
+            width: 12vh;
+            margin-right: 1%;
+        }
+        #signup_btn{
+            width: 12vh;
+            margin-right: 1%;
+        }
+        #public_notes {
+            margin-top: 1%;
+            height: 80vh;
+            overflow-y: scroll;
+            scroll-behavior: smooth;
+            padding-right: 1%;
+        }
+
+        #public_notes::-webkit-scrollbar{width: 10px;}
+        #public_notes::-webkit-scrollbar-track {background-color: rgb(255, 255, 255);border-radius: 20px;}
+        #public_notes::-webkit-scrollbar-thumb {background: #400052; border-radius: 20px;}
+
+        #new_elem {
+            background-color: #400052;
+            padding: 1%;
+            margin-top: 2%;
+        }
+        .title_div{
+            display: flex;
+            justify-content: space-between;
+            padding-right: 2%;
+            padding-left: 2%;
+        }
+        .n_title{
+            font-size: large;
+            color: aliceblue;
+        }
+        .body_div{
+            padding: 2%;
+            text-align: left;
+            font-size: large;
+            color: aliceblue;
+        }
+    </style>
+</head>
+<body>
+    <div id="nav_bar">
+        <button onclick="goto_login_page()" id="login_btn">Login</button>
+        <button onclick="goto_signup_page()" id="signup_btn">Signup</button>
+    </div>
+    <div id="public_notes">{{ publicnotes |safe }}</div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script>
+        function goto_login_page(){
+            acc_data = localStorage.getItem("notes_app_login_data");
+            if (acc_data != null) {
+                try {
+                    new_acc_data = JSON.parse(acc_data);
+                    var new_acc_data_form = new FormData();
+                    new_acc_data_form.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+                    new_acc_data_form.append("username", new_acc_data.uname);
+                    new_acc_data_form.append("password", new_acc_data.passw);
+                    $.ajax({
+                        method: "POST",
+                        url: "checkLogin",
+                        processData: false,
+                        contentType: false,
+                        dataType: "json",
+                        mimeType: "multipart/form-data",
+                        data: new_acc_data_form,
+                        success: function (data) {
+                            window.location.href = "account";
+                        }
+                    });
+                } catch {
+                    window.location.replace("login");
+                }
+            } else {
+                window.location.replace("login");
+            }
+        }
+        function goto_signup_page(){window.location.href = "signup";}
+    </script>
+</body>
+</html>
