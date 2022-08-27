@@ -32,11 +32,11 @@ public_notes_html = """
 def get_public_notes():
     public_notes_path = f"{BASE_DIR}\\public"
     public_notes_list = os.listdir(public_notes_path)
+    public_notes_list.remove("blank")
     if public_notes_list:
         all_public_notes = []
         for uname in public_notes_list:
-            one_user_public_notes_list = os.listdir(
-                f"{public_notes_path}\\{uname}")
+            one_user_public_notes_list = os.listdir(f"{public_notes_path}\\{uname}")
             if one_user_public_notes_list:
                 for public_notes in one_user_public_notes_list:
                     one_public_note = []
